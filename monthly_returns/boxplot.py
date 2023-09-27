@@ -4,11 +4,11 @@ import seaborn as sns
 import numpy as np
 from matplotlib import cm
 
-sp500_data = pd.read_csv("csv/monthly_returns_snp500.csv", index_col=0)
-markowitz_data = pd.read_csv("csv/monthly_returns_markowitz.csv", index_col=0)
-kmeans_data = pd.read_csv("csv/monthly_returns_kmeans.csv", index_col=0)
-kmeans_dtw_data = pd.read_csv("csv/monthly_returns_kmeans_dtw.csv", index_col=0)
-kshape_data = pd.read_csv("csv/monthly_returns_kshape.csv", index_col=0)
+sp500_data = pd.read_csv("../csv/monthly_returns_snp500.csv", index_col=0)
+markowitz_data = pd.read_csv("../csv/monthly_returns_markowitz.csv", index_col=0)
+kmeans_data = pd.read_csv("../csv/monthly_returns_kmeans.csv", index_col=0)
+kmeans_dtw_data = pd.read_csv("../csv/monthly_returns_kmeans_dtw.csv", index_col=0)
+kshape_data = pd.read_csv("../csv/monthly_returns_kshape.csv", index_col=0)
 
 # IQR 이상치 제거
 Q1 = markowitz_data.quantile(0.25)

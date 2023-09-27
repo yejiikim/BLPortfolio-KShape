@@ -76,7 +76,7 @@ def compute_statistics(snp500):
     return results
 
 def main():
-    file_path = 'stocks_2000_2020_data_by_sector-2.xlsx'
+    file_path = '../stocks_2000_2020_data_by_sector-2.xlsx'
     df_snp500 = load_data_from_excel(file_path)
     statistics = compute_statistics(df_snp500)
 

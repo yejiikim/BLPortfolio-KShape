@@ -1,8 +1,7 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-from tslearn.clustering import TimeSeriesKMeans
-from tslearn.preprocessing import TimeSeriesScalerMeanVariance
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 from pypfopt import BlackLittermanModel, CovarianceShrinkage
 from pandas import Timestamp
 from pypfopt import EfficientFrontier
@@ -13,7 +12,7 @@ warnings.filterwarnings('ignore')
 
 # 데이터 병합
 sectors_data = {}
-excel_file_path = 'stocks_2000_2020_data_by_sector-2.xlsx'
+excel_file_path = '../stocks_2000_2020_data_by_sector-2.xlsx'
 snp_price_data = pd.ExcelFile(excel_file_path)
 for sheet_name in snp_price_data.sheet_names:
     sheet_data = pd.read_excel(excel_file_path, sheet_name=sheet_name)
@@ -57,9 +56,10 @@ while invest_start_day < Timestamp('2020-12-30'):
     # 데이터 형태 변환
     kmeans_data = learn_return_data.T.values.reshape(-1, learn_return_data.shape[0])
 
-    # kmeans(dtw) 클러스터링
-    kmeans = TimeSeriesKMeans(n_clusters=n_clusters, metric="dtw", verbose=False)
-    kmeans_data = TimeSeriesScalerMeanVariance(mu=0., std=1.).fit_transform(kmeans_data)
+    # kmeans 클러스터링
+    scaler = StandardScaler()
+    kmeans = KMeans(n_clusters=n_clusters)
+    kmeans_data = scaler.fit_transform(kmeans_data)
     y_pred = kmeans.fit_predict(kmeans_data)
 
     # 클러스터별 평균 수익률 추출 및 P, Q 행렬 구성
@@ -117,17 +117,16 @@ while invest_start_day < Timestamp('2020-12-30'):
     learn_start_day = return_df.index[next_invest_start_index - learn_window]
     learn_end_day = return_df.index[next_invest_start_index - 1]
 
-
 # 월별 로그수익률 계산
 monthly_returns = [(cumulative_returns[i + 1] - cumulative_returns[i]) for i in range(len(cumulative_returns) - 1)]
 
 df_monthly_returns = pd.DataFrame(monthly_returns, columns=['0'])
 df_monthly_returns.reset_index(inplace=True)
 df_monthly_returns.rename(columns={"index": "Unnamed: 0"}, inplace=True)
-df_monthly_returns.to_csv("monthly_returns_kmeans_dtw.csv", index=False)
+df_monthly_returns.to_csv("monthly_returns_kmeans.csv", index=False)
 
 # monthly_cumulative_returns_df = pd.DataFrame({'Date': df.index[1:len(monthly_returns)+1], 'Cumulative_Log_Return': np.cumsum(monthly_returns)})
-# monthly_cumulative_returns_df.to_csv("kmeans_dtw_cumulative_returns.csv", index=False)
+# monthly_cumulative_returns_df.to_csv("kmeans_cumulative_returns.csv", index=False)
 
 # 연 로그수익률, 표준편차 계산
 annual_log_return = np.mean(monthly_returns) * 12 / invest_window * 20
@@ -136,6 +135,7 @@ annual_volatility = np.std(monthly_returns) * np.sqrt(12/invest_window*20)  # �
 # 1. Sharpe Ratio
 risk_free_rate = 0.02
 sharpe_ratio = (annual_log_return - risk_free_rate) / annual_volatility
+
 
 # 2. Sortino Ratio
 downside_risks = [r for r in monthly_returns if r < 0]
@@ -150,6 +150,7 @@ profit_factor = gross_profit / gross_loss if gross_loss != 0 else np.inf  # gros
 # 누적 수익률 계산
 cumulative_returns = np.cumsum(monthly_returns)
 
+print(len(cumulative_returns))
 # MDD 계산
 running_max = np.maximum.accumulate(cumulative_returns)
 drawdown = cumulative_returns - running_max
@@ -188,7 +189,6 @@ unprofitable_years = len([r for r in annual_returns if r <= 0])
 
 print(f"Profitable Years: {profitable_years}")
 print(f"Unprofitable Years: {unprofitable_years}")
-
 print(round(annual_log_return, 3))
 print(round(annual_volatility, 3))
 print(round(sharpe_ratio, 3))

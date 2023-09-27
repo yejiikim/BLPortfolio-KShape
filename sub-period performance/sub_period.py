@@ -12,7 +12,7 @@ warnings.filterwarnings('ignore')
 
 # 데이터 병합
 sectors_data = {}
-excel_file_path = 'stocks_2000_2020_data_by_sector-2.xlsx'
+excel_file_path = '../stocks_2000_2020_data_by_sector-2.xlsx'
 snp_price_data = pd.ExcelFile(excel_file_path)
 for sheet_name in snp_price_data.sheet_names:
     sheet_data = pd.read_excel(excel_file_path, sheet_name=sheet_name)
